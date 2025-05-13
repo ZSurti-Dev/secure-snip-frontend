@@ -11,8 +11,18 @@
   ],
   "routes": [
     {
-      "src": "/assets/(.+\\.(?:js|css))$",
-      "dest": "/assets/$1"
+      "src": "/assets/(.+\\.js)$",
+      "dest": "/assets/$1",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "/assets/(.+\\.css)$",
+      "dest": "/assets/$1",
+      "headers": {
+        "Content-Type": "text/css"
+      }
     },
     {
       "src": "/(.*)",
