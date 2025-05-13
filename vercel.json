@@ -1,6 +1,12 @@
+
+
 {
   "version": 2,
   "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    },
     {
       "src": "package.json",
       "use": "@vercel/static-build",
@@ -11,22 +17,26 @@
   ],
   "routes": [
     {
-      "src": "/assets/(.+\\.js)$",
-      "dest": "/assets/$1",
-      "headers": {
-        "Content-Type": "application/javascript"
-      }
+      "src": "/api/(.*)",
+      "dest": "/index.js"
     },
     {
-      "src": "/assets/(.+\\.css)$",
-      "dest": "/assets/$1",
-      "headers": {
-        "Content-Type": "text/css"
-      }
+      "src": "/assets/(.*\\.js)",
+      "headers": { "Content-Type": "application/javascript" },
+      "dest": "/dist/assets/$1"
+    },
+    {
+      "src": "/assets/(.*\\.css)",
+      "headers": { "Content-Type": "text/css" },
+      "dest": "/dist/assets/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist/assets/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/dist/index.html"
     }
   ]
 }
