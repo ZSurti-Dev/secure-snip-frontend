@@ -11,8 +11,12 @@
   ],
   "routes": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "src": "/(assets|static)/(.*)",
+      "dest": "/$1/$2"
+    },
+    {
+      "src": "/.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json)$",
+      "dest": "/$0"
     },
     {
       "src": "/(.*)",
