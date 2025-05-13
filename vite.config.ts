@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://secure-snip.vercel.app'),
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://secure-snip-nnj2dgpfl-zsurti-devs-projects.vercel.app/'),
   },
   build: {
     outDir: 'dist', // Ensure the output directory matches what Vercel expects
