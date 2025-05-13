@@ -7,7 +7,7 @@ const ViewSnippet: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { encryptedData, title, createdAt, id: stateId } = location.state || {};
+  const { encryptedData: stateEncryptedData, title: stateTitle, createdAt: stateCreatedAt, id: stateId } = location.state || {};
   const [password, setPassword] = useState('');
   const [decryptedMessage, setDecryptedMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -15,49 +15,97 @@ const ViewSnippet: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [snippetData, setSnippetData] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Get ID from query params (from QR code) or state (from Home page)
   const id = searchParams.get('id') || stateId;
 
+  console.log('ID from params or state:', id);
+  console.log('Base URL:', import.meta.env.VITE_BASE_URL);
+
   useEffect(() => {
     const fetchSnippet = async () => {
+      setLoading(true);
+      // Make sure we have an ID before attempting to fetch
+      if (!id) {
+        setError('No snippet ID provided');
+        setLoading(false);
+        return;
+      }
+
       try {
+        console.log(`Fetching snippet with ID: ${id}`);
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
+        console.log('Fetch response:', response.data);
+        
         setSnippetData({
           encryptedData: response.data.encryptedData,
           title: response.data.title,
           createdAt: response.data.createdAt,
         });
-      } catch {
-        console.error('Error fetching snippet:');
-        setError('Failed to load snippet details.');
+      } catch (err) {
+        console.error('Error fetching snippet:', err);
+        setError('Failed to load snippet. It may have been deleted or the ID is invalid.');
+      } finally {
+        setLoading(false);
       }
     };
-    if (id && !snippetData) fetchSnippet();
-  }, [id, snippetData]);
+
+    // If we already have the data from state (coming from Home page), use that
+    if (stateEncryptedData && stateTitle) {
+      setSnippetData({
+        encryptedData: stateEncryptedData,
+        title: stateTitle,
+        createdAt: stateCreatedAt,
+      });
+      setLoading(false);
+    } 
+    // Otherwise fetch the data (likely coming from QR code scan)
+    else if (id) {
+      fetchSnippet();
+    } else {
+      setError('No snippet information available');
+      setLoading(false);
+    }
+  }, [id, stateEncryptedData, stateTitle, stateCreatedAt]);
 
   const handleDecrypt = async () => {
+    if (!id) {
+      setError('No snippet ID available');
+      return;
+    }
+
     setIsDecrypting(true);
     setError(null);
-    console.log('Attempting decryption with password:', password);
+    console.log('Attempting decryption with password for ID:', id);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/decrypt`, { id, password });
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/decrypt`, { 
+        id, 
+        password 
+      });
+      
       console.log('Decryption response:', response.data);
       if (response.data.success) {
         setDecryptedMessage(response.data.message);
       } else {
         setError(response.data.error || 'Decryption failed.');
       }
-    } catch {
-      console.error('Error decrypting snippet:');
-      setError('Decryption failed. Invalid data or password.');
+    } catch (err: any) {
+      console.error('Error decrypting snippet:', err);
+      const errorMessage = err.response?.data?.error || 'Decryption failed. Invalid data or password.';
+      setError(errorMessage);
     } finally {
       setIsDecrypting(false);
     }
   };
 
   const handleDelete = async () => {
+    if (!id) {
+      setError('No snippet ID available');
+      return;
+    }
+
     setIsDeleting(true);
     setError(null);
     
@@ -77,15 +125,13 @@ const ViewSnippet: React.FC = () => {
         setError(response.data.error || 'Failed to delete snippet.');
         setIsDeleting(false);
       }
-    } catch (error) {
-      console.error('Error deleting snippet:', error);
-      setError('Failed to delete snippet. Please try again.');
+    } catch (err: any) {
+      console.error('Error deleting snippet:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to delete snippet. Please try again.';
+      setError(errorMessage);
       setIsDeleting(false);
     }
   };
-
-  // Use snippetData if fetched from QR code, otherwise use state
-  const displayData = snippetData || { encryptedData, title, createdAt };
 
   // Lock animation variants
   const lockVariants = {
@@ -94,17 +140,54 @@ const ViewSnippet: React.FC = () => {
     unlocked: { rotate: 0, scale: [1, 1.2, 1], transition: { duration: 0.5 } },
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-12 px-4 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading snippet...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !snippetData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-12 px-4 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="text-red-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Snippet</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link to="/snippets">
+            <button className="w-full py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium shadow-md transition-all duration-300 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Snippets
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-12 px-4">
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8">
         <div className="border-b border-gray-200 pb-5 mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#304FFE]">{displayData.title || 'Untitled Snippet'}</h2>
-          {displayData.createdAt && (
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#304FFE]">
+            {snippetData?.title || 'Untitled Snippet'}
+          </h2>
+          {snippetData?.createdAt && (
             <p className="text-sm text-gray-500 mt-2 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Created on {new Date(displayData.createdAt).toLocaleDateString()}
+              Created on {new Date(snippetData.createdAt).toLocaleDateString()}
             </p>
           )}
         </div>
@@ -183,9 +266,9 @@ const ViewSnippet: React.FC = () => {
 
             <button
               onClick={handleDecrypt}
-              disabled={isDecrypting}
+              disabled={isDecrypting || !password}
               className={`w-full py-3 rounded-lg text-white font-medium shadow-md transition-all duration-300 ${
-                isDecrypting 
+                isDecrypting || !password
                   ? 'bg-indigo-400 cursor-not-allowed' 
                   : 'bg-[#0019A9] hover:bg-[#031577] transform hover:-translate-y-1'
               }`}
@@ -245,6 +328,7 @@ const ViewSnippet: React.FC = () => {
           <button 
             onClick={() => setShowDeleteConfirm(true)}
             className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium shadow-md transition-all duration-300 flex items-center justify-center"
+            disabled={!id}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
