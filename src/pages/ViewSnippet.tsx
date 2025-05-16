@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useSearchParams, useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion'; // For lock animation
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 
 const ViewSnippet: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { encryptedData: stateEncryptedData, title: stateTitle, createdAt: stateCreatedAt, id: stateId } = location.state || {};
+  const { id } = useParams(); // Get ID from route path (/view/:id)
+  const { encryptedData: stateEncryptedData, title: stateTitle, createdAt: stateCreatedAt } = location.state || {};
   const [password, setPassword] = useState('');
   const [decryptedMessage, setDecryptedMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -16,31 +16,13 @@ const ViewSnippet: React.FC = () => {
   const [snippetData, setSnippetData] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const params = useParams;
-  const urlParamId = params.id;
-  const queryParamId = searchParams.get('id');
-  const stateId = location.state?.id;
 
-  // Choose the first available ID from these sources
-  const id = urlParamId || queryParamId || stateId;
-
-  // Get ID from query params (from QR code) or state (from Home page)
-    const id = searchParams.get('id') || stateId;
-
-   console.log('ViewSnippet component loaded with ID sources:', {
-    fromUrlParam: urlParamId,
-    fromQueryParam: queryParamId,
-    fromState: stateId,
-    finalId: id
-  });
-
-  console.log('ID from params or state:', id);
+  console.log('ID from params:', id);
   console.log('Base URL:', import.meta.env.VITE_BASE_URL);
 
   useEffect(() => {
     const fetchSnippet = async () => {
       setLoading(true);
-      // Make sure we have an ID before attempting to fetch
       if (!id) {
         setError('No snippet ID provided');
         setLoading(false);
@@ -50,12 +32,10 @@ const ViewSnippet: React.FC = () => {
       try {
         console.log(`Fetching snippet with ID: ${id}`);
         console.log(`Full URL being called: ${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
-
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`, {
-          timeout: 5000 // 10 second timeout
+          timeout: 5000
         });
         console.log('Fetch response:', response.data);
-        
         setSnippetData({
           encryptedData: response.data.encryptedData,
           title: response.data.title,
@@ -69,7 +49,6 @@ const ViewSnippet: React.FC = () => {
       }
     };
 
-    // If we already have the data from state (coming from Home page), use that
     if (stateEncryptedData && stateTitle) {
       setSnippetData({
         encryptedData: stateEncryptedData,
@@ -77,9 +56,7 @@ const ViewSnippet: React.FC = () => {
         createdAt: stateCreatedAt,
       });
       setLoading(false);
-    } 
-    // Otherwise fetch the data (likely coming from QR code scan)
-    else if (id) {
+    } else if (id) {
       fetchSnippet();
     } else {
       setError('No snippet information available');
@@ -102,7 +79,6 @@ const ViewSnippet: React.FC = () => {
         id, 
         password 
       });
-      
       console.log('Decryption response:', response.data);
       if (response.data.success) {
         setDecryptedMessage(response.data.message);
@@ -130,7 +106,6 @@ const ViewSnippet: React.FC = () => {
     try {
       const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
       if (response.data.success) {
-        // Navigate back to snippets list after successful deletion
         navigate('/snippets', { 
           state: { 
             notification: {
@@ -151,7 +126,6 @@ const ViewSnippet: React.FC = () => {
     }
   };
 
-  // Lock animation variants
   const lockVariants = {
     locked: { rotate: 0, transition: { duration: 0.3 } },
     unlocking: { rotate: [0, 15, -15, 10, -10, 5, -5, 0], transition: { duration: 0.8 } },
@@ -210,17 +184,13 @@ const ViewSnippet: React.FC = () => {
           )}
         </div>
 
-        {/* Lock Animation Container */}
         <div className="flex flex-col items-center justify-center mb-8">
           <div className="relative w-24 h-24 flex items-center justify-center mb-3">
-            {/* Background Circle */}
             <motion.div 
               className="absolute w-24 h-24 bg-indigo-100 rounded-full"
               animate={decryptedMessage ? { scale: [1, 1.2, 1] } : { scale: 1 }}
               transition={{ duration: 0.5 }}
             />
-            
-            {/* Lock Icon */}
             <motion.svg
               className="h-12 w-12 text-[#0019A9] relative z-10"
               fill="none"
@@ -246,7 +216,6 @@ const ViewSnippet: React.FC = () => {
               )}
             </motion.svg>
           </div>
-          
           <p className="text-lg font-medium text-[#304FFE]">
             {isDecrypting ? 'Unlocking...' : decryptedMessage ? 'Message Unlocked!' : 'Secure Message'}
           </p>
@@ -255,7 +224,6 @@ const ViewSnippet: React.FC = () => {
           </p>
         </div>
 
-        {/* Decryption Form */}
         {!decryptedMessage && (
           <div className="space-y-5">
             <div className="relative">
@@ -311,7 +279,6 @@ const ViewSnippet: React.FC = () => {
           </div>
         )}
 
-        {/* Decrypted Message */}
         {decryptedMessage && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -331,7 +298,6 @@ const ViewSnippet: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Action Buttons */}
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
           <Link to="/snippets" className="flex-1">
             <button className="w-full py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium shadow-md transition-all duration-300 flex items-center justify-center">
@@ -342,7 +308,6 @@ const ViewSnippet: React.FC = () => {
             </button>
           </Link>
           
-          {/* Delete Button */}
           <button 
             onClick={() => setShowDeleteConfirm(true)}
             className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium shadow-md transition-all duration-300 flex items-center justify-center"
@@ -356,7 +321,6 @@ const ViewSnippet: React.FC = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div 

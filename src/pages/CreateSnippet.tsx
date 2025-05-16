@@ -46,6 +46,7 @@ const CreateSnippet: React.FC = () => {
       tags: tagArray.join(',')
     });
     console.log('Response from backend:', response.data);
+    console.log('Snippet ID received:', response.data.id); // Log the ID to verify
     if (response.data.success) {
       setQrData(response.data.encryptedData);
       setSnippetId(response.data.id);
