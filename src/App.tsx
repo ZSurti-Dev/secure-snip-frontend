@@ -4,6 +4,7 @@ import Welcome from './pages/Welcome';
 import Home from './pages/Home';
 import CreateSnippet from './pages/CreateSnippet';
 import ViewSnippet from './pages/ViewSnippet';
+import QRRedirect from './components/QRRedirect';
 import Navbar from './components/Navbar';
 import QrDetails from './pages/QrDetails';
 import Help from './pages/Help'
@@ -23,8 +24,10 @@ const App: React.FC = () => {
         <Route path="/snippets" element={<Home />} />
         <Route path="/create" element={<CreateSnippet />} />
         <Route path="/view" element={<ViewSnippet />} />
+        <Route path= "/qr-redirect" element={<QRRedirect />} />        
         <Route path="/help" element={<Help />} />
         <Route path="/qr-details" element={<QrDetails />} />
+
       </Routes>
     </Router>
   );
