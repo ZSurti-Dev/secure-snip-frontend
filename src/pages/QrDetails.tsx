@@ -7,8 +7,9 @@ const QrDetails: React.FC = () => {
   const { title, id } = location.state || {};
   const qrRef = useRef<HTMLCanvasElement>(null);
 
-  // URL to encode in the QR code
-  const qrCodeUrl = `${window.location.origin}/view?id=${id}`;
+  // Fix: Use the correct URL format for the QR code
+  // This should match your routing structure
+  const qrCodeUrl = `${window.location.origin}/qr-redirect?id=${id}`;
 
   const downloadQRCode = () => {
     const canvas = qrRef.current;
