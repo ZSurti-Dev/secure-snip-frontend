@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion'; // For lock animation
 import axios from 'axios';
 
@@ -16,9 +16,23 @@ const ViewSnippet: React.FC = () => {
   const [snippetData, setSnippetData] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const params = useParams;
+  const urlParamId = params.id;
+  const queryParamId = searchParams.get('id');
+  const stateId = location.state?.id;
+
+  // Choose the first available ID from these sources
+  const id = urlParamId || queryParamId || stateId;
 
   // Get ID from query params (from QR code) or state (from Home page)
-  const id = searchParams.get('id') || stateId;
+    const id = searchParams.get('id') || stateId;
+
+   console.log('ViewSnippet component loaded with ID sources:', {
+    fromUrlParam: urlParamId,
+    fromQueryParam: queryParamId,
+    fromState: stateId,
+    finalId: id
+  });
 
   console.log('ID from params or state:', id);
   console.log('Base URL:', import.meta.env.VITE_BASE_URL);
@@ -35,7 +49,11 @@ const ViewSnippet: React.FC = () => {
 
       try {
         console.log(`Fetching snippet with ID: ${id}`);
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
+        console.log(`Full URL being called: ${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
+
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`, {
+          timeout: 5000 // 10 second timeout
+        });
         console.log('Fetch response:', response.data);
         
         setSnippetData({
