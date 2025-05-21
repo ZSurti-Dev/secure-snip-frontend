@@ -32,7 +32,7 @@ const ViewSnippet: React.FC = () => {
       try {
         console.log(`Fetching snippet with ID: ${id}`);
         console.log(`Full URL being called: ${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/snippets/${id}`, {
           timeout: 5000
         });
         console.log('Fetch response:', response.data);
@@ -75,7 +75,7 @@ const ViewSnippet: React.FC = () => {
     console.log('Attempting decryption with password for ID:', id);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/decrypt`, { 
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/decrypt`, { 
         id, 
         password 
       });
@@ -104,7 +104,7 @@ const ViewSnippet: React.FC = () => {
     setError(null);
     
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
+      const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/snippets/${id}`);
       if (response.data.success) {
         navigate('/snippets', { 
           state: { 

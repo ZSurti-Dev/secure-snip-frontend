@@ -39,7 +39,7 @@ const CreateSnippet: React.FC = () => {
     const tagArray = tags.split(',').map((tag) => tag.trim()).filter((tag) => tag);
     console.log('Sending request to:', `${import.meta.env.VITE_BASE_URL}/api/snippets`);
     console.log('Request payload:', { title, message, password, tags: tagArray.join(',') });
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/snippets`, { 
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/snippets`, { 
       title,
       message, 
       password, 
