@@ -19,7 +19,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchSnippets = async () => {
       try {
-        const response = await axios.get<Snippet[]>(`${import.meta.env.VITE_BASE_URL}/api/snippets`);
+        const response = await axios.get<Snippet[]>(`${import.meta.env.VITE_API_URL}/api/snippets`);
         setSnippets(response.data);
       } catch (err: any) {
         console.error('Error fetching snippets:', err.message);
@@ -34,7 +34,7 @@ const Home: React.FC = () => {
   const handleDelete = async (id: string) => {
     setDeleteLoading(id);
     try {
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/snippets/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/snippets/${id}`);
       setSnippets(snippets.filter((snippet) => snippet._id !== id));
       setError(null);
     } catch (err: any) {

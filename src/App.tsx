@@ -24,6 +24,7 @@ const App: React.FC = () => {
         <Route path="/snippets" element={<Home />} />
         <Route path="/create" element={<CreateSnippet />} />
         <Route path="/view" element={<ViewSnippet />} />
+        <Route path="/view/:id" element={<ViewSnippet />} />
         <Route path= "/qr-redirect" element={<QRRedirect />} />        
         <Route path="/help" element={<Help />} />
         <Route path="/qr-details" element={<QrDetails />} />

@@ -8,11 +8,15 @@ const QRRedirect: React.FC = () => {
 
   useEffect(() => {
     if (id) {
+      console.log('Redirecting with ID:', id);
+      
       // Redirect to the ViewSnippet component with the ID parameter
-      navigate(`/view`, { 
+      navigate(`/view/${id}`, { 
         state: { id }, 
         replace: true 
       });
+    } else {
+      console.error('No ID found in URL parameters');
     }
   }, [id, navigate]);
 

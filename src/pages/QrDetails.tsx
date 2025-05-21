@@ -13,8 +13,8 @@ const QrDetails: React.FC = () => {
 
   const downloadQRCode = () => {
     const canvas = qrRef.current;
-    if (canvas) {
-      const url = canvas.toDataURL('image/png');
+      if (canvas) {
+        const url = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = url;
       link.download = `${title || 'qrcode'}.png`;
