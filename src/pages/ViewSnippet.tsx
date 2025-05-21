@@ -154,14 +154,14 @@ const ViewSnippet: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Snippet</h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Link to="/snippets">
+          {/* <Link to="/snippets">
             <button className="w-full py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium shadow-md transition-all duration-300 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Back to Snippets
             </button>
-          </Link>
+          </Link> */}
         </div>
       </div>
     );

@@ -16,7 +16,7 @@ const Welcome: React.FC =  () => {
                 <p className="mb-8 text-gray-600 font-medium md:text-xl">
                     Send secure messages with confidence.
                 </p>
-                <Link to="/snippets">
+                <Link to="/create">
                     <button className="bg-gradient-to-r from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white px-8 py-3 w-full rounded-lg text-lg font-medium shadow-md transform transition-all hover:-translate-y-1 duration-300">
                         Get Started
                     </button>
